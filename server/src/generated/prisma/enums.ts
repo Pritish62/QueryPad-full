@@ -9,7 +9,22 @@
 * 🟢 You can import this file directly.
 */
 
+export const SourceType = {
+  PDF: 'PDF',
+  WEBSITE: 'WEBSITE',
+  YOUTUBE: 'YOUTUBE',
+  TEXT: 'TEXT',
+  MARKDOWN: 'MARKDOWN'
+} as const
+
+export type SourceType = (typeof SourceType)[keyof typeof SourceType]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const SourceStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED: 'FAILED'
+} as const
+
+export type SourceStatus = (typeof SourceStatus)[keyof typeof SourceStatus]
