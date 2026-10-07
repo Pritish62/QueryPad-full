@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Public_Sans, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/provider/theme-provider";
+import { QueryProvider } from "@/components/provider/query-provider";
 
 const notoSansHeading = Noto_Sans({subsets:['latin'],variable:'--font-heading'});
 
@@ -35,7 +36,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
-          >{children}</ThemeProvider></body>
+          >
+            <QueryProvider>{children}</QueryProvider>
+          </ThemeProvider>
+      </body>
     </html>
   );
 }

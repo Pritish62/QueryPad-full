@@ -56,7 +56,7 @@ export function LoginForm({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const callbackUrl =
+    const callbackPath =
         searchParams.get("callbackUrl") ?? authRoutes.dashboard;
 
     async function handleGoogleSignIn() {
@@ -65,7 +65,7 @@ export function LoginForm({
 
         const { data, error } = await signIn.social({
             provider: "google",
-            callbackURL: callbackUrl,
+            callbackURL: new URL(callbackPath, window.location.origin).toString(),
         });
 
         if (error) {

@@ -12,12 +12,6 @@ import {
 
 export const sourceRoutes = Router({ mergeParams: true });
 
-sourceRoutes.post(
-    "/upload",
-  
-   
-);
-
 sourceRoutes.get("/", asyncHandler(listSources));
 sourceRoutes.post("/", asyncHandler(createSource));
 sourceRoutes.post("/bulk-delete", asyncHandler(bulkDeleteSources));
