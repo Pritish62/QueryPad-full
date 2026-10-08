@@ -51,6 +51,21 @@ export const createSourceSchema = z.discriminatedUnion("type", [
 
 
 //TODO: Add validation for other source types (PDF, WEBSITE, YOUTUBE) when they are implemented
+export const importWebSearchSchema = z.object({
+    title: z.string().trim().min(1).max(200),
+    content: z.string().trim().min(1),
+    url: z.string().trim().url(),
+});
+
+export const importWebsiteSchema = z.object({
+    url: z.string().trim().url("Enter a valid URL"),
+    title: z.string().trim().max(200).optional(),
+});
+
+export const importYoutubeSchema = z.object({
+    url: z.string().trim().min(1, "YouTube URL is required"),
+    title: z.string().trim().max(200).optional(),
+});
 
 
 export const bulkDeleteSourcesSchema = z.object({
@@ -61,12 +76,16 @@ export const reprocessSourcesSchema = z.object({
     sourceIds: z.array(z.string().trim().min(1)).optional(),
 });
 
+
+
+
 export type ListSourcesQuery = z.infer<typeof listSourcesQuerySchema>;
 export type CreateTextSource = z.infer<typeof createTextSourceSchema>;
 export type CreateMarkdownSource = z.infer<typeof createMarkdownSourceSchema>;
 export type CreateSourceInput = z.infer<typeof createSourceSchema>;
 export type BulkDeleteSourcesInput = z.infer<typeof bulkDeleteSourcesSchema>;
 export type ReprocessSourcesInput = z.infer<typeof reprocessSourcesSchema>;
-
-
+export type ImportWebsiteInput = z.infer<typeof importWebsiteSchema>;
+export type ImportWebSearchInput = z.infer<typeof importWebSearchSchema>;
+export type ImportYoutubeInput = z.infer<typeof importYoutubeSchema>;
 
