@@ -402,7 +402,8 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Workspace: 'Workspace',
-  Source: 'Source'
+  Source: 'Source',
+  SourceChunk: 'SourceChunk'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -418,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "workspace" | "source"
+    modelProps: "user" | "session" | "account" | "verification" | "workspace" | "source" | "sourceChunk"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -866,6 +867,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SourceChunk: {
+      payload: Prisma.$SourceChunkPayload<ExtArgs>
+      fields: Prisma.SourceChunkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SourceChunkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SourceChunkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>
+        }
+        findFirst: {
+          args: Prisma.SourceChunkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SourceChunkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>
+        }
+        findMany: {
+          args: Prisma.SourceChunkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>[]
+        }
+        create: {
+          args: Prisma.SourceChunkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>
+        }
+        createMany: {
+          args: Prisma.SourceChunkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SourceChunkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>[]
+        }
+        delete: {
+          args: Prisma.SourceChunkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>
+        }
+        update: {
+          args: Prisma.SourceChunkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>
+        }
+        deleteMany: {
+          args: Prisma.SourceChunkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SourceChunkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SourceChunkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>[]
+        }
+        upsert: {
+          args: Prisma.SourceChunkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceChunkPayload>
+        }
+        aggregate: {
+          args: Prisma.SourceChunkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSourceChunk>
+        }
+        groupBy: {
+          args: Prisma.SourceChunkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourceChunkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SourceChunkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourceChunkCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -991,6 +1066,19 @@ export const SourceScalarFieldEnum = {
 } as const
 
 export type SourceScalarFieldEnum = (typeof SourceScalarFieldEnum)[keyof typeof SourceScalarFieldEnum]
+
+
+export const SourceChunkScalarFieldEnum = {
+  id: 'id',
+  sourceId: 'sourceId',
+  index: 'index',
+  content: 'content',
+  tokenCount: 'tokenCount',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type SourceChunkScalarFieldEnum = (typeof SourceChunkScalarFieldEnum)[keyof typeof SourceChunkScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1128,6 +1216,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -1287,6 +1389,7 @@ export type GlobalOmitConfig = {
   verification?: Prisma.VerificationOmit
   workspace?: Prisma.WorkspaceOmit
   source?: Prisma.SourceOmit
+  sourceChunk?: Prisma.SourceChunkOmit
 }
 
 /* Types for Logging */

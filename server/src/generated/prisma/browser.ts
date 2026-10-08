@@ -47,3 +47,8 @@ export type Workspace = Prisma.WorkspaceModel
  * 
  */
 export type Source = Prisma.SourceModel
+/**
+ * Model SourceChunk
+ * 
+ */
+export type SourceChunk = Prisma.SourceChunkModel

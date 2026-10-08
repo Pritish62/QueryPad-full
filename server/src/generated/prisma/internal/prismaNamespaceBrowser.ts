@@ -56,7 +56,8 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Workspace: 'Workspace',
-  Source: 'Source'
+  Source: 'Source',
+  SourceChunk: 'SourceChunk'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -161,6 +162,19 @@ export const SourceScalarFieldEnum = {
 } as const
 
 export type SourceScalarFieldEnum = (typeof SourceScalarFieldEnum)[keyof typeof SourceScalarFieldEnum]
+
+
+export const SourceChunkScalarFieldEnum = {
+  id: 'id',
+  sourceId: 'sourceId',
+  index: 'index',
+  content: 'content',
+  tokenCount: 'tokenCount',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type SourceChunkScalarFieldEnum = (typeof SourceChunkScalarFieldEnum)[keyof typeof SourceChunkScalarFieldEnum]
 
 
 export const SortOrder = {

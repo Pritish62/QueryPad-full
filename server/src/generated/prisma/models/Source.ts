@@ -219,6 +219,7 @@ export type SourceWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Source"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Source"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
+  chunks?: Prisma.SourceChunkListRelationFilter
 }
 
 export type SourceOrderByWithRelationInput = {
@@ -233,6 +234,7 @@ export type SourceOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
+  chunks?: Prisma.SourceChunkOrderByRelationAggregateInput
 }
 
 export type SourceWhereUniqueInput = Prisma.AtLeast<{
@@ -250,6 +252,7 @@ export type SourceWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Source"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Source"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
+  chunks?: Prisma.SourceChunkListRelationFilter
 }, "id">
 
 export type SourceOrderByWithAggregationInput = {
@@ -295,6 +298,7 @@ export type SourceCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.WorkspaceCreateNestedOneWithoutSourceInput
+  chunks?: Prisma.SourceChunkCreateNestedManyWithoutSourceInput
 }
 
 export type SourceUncheckedCreateInput = {
@@ -308,6 +312,7 @@ export type SourceUncheckedCreateInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  chunks?: Prisma.SourceChunkUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type SourceUpdateInput = {
@@ -321,6 +326,7 @@ export type SourceUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutSourceNestedInput
+  chunks?: Prisma.SourceChunkUpdateManyWithoutSourceNestedInput
 }
 
 export type SourceUncheckedUpdateInput = {
@@ -334,6 +340,7 @@ export type SourceUncheckedUpdateInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  chunks?: Prisma.SourceChunkUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type SourceCreateManyInput = {
@@ -421,6 +428,11 @@ export type SourceMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type SourceScalarRelationFilter = {
+  is?: Prisma.SourceWhereInput
+  isNot?: Prisma.SourceWhereInput
+}
+
 export type SourceCreateNestedManyWithoutWorkspaceInput = {
   create?: Prisma.XOR<Prisma.SourceCreateWithoutWorkspaceInput, Prisma.SourceUncheckedCreateWithoutWorkspaceInput> | Prisma.SourceCreateWithoutWorkspaceInput[] | Prisma.SourceUncheckedCreateWithoutWorkspaceInput[]
   connectOrCreate?: Prisma.SourceCreateOrConnectWithoutWorkspaceInput | Prisma.SourceCreateOrConnectWithoutWorkspaceInput[]
@@ -471,6 +483,20 @@ export type EnumSourceStatusFieldUpdateOperationsInput = {
   set?: $Enums.SourceStatus
 }
 
+export type SourceCreateNestedOneWithoutChunksInput = {
+  create?: Prisma.XOR<Prisma.SourceCreateWithoutChunksInput, Prisma.SourceUncheckedCreateWithoutChunksInput>
+  connectOrCreate?: Prisma.SourceCreateOrConnectWithoutChunksInput
+  connect?: Prisma.SourceWhereUniqueInput
+}
+
+export type SourceUpdateOneRequiredWithoutChunksNestedInput = {
+  create?: Prisma.XOR<Prisma.SourceCreateWithoutChunksInput, Prisma.SourceUncheckedCreateWithoutChunksInput>
+  connectOrCreate?: Prisma.SourceCreateOrConnectWithoutChunksInput
+  upsert?: Prisma.SourceUpsertWithoutChunksInput
+  connect?: Prisma.SourceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SourceUpdateToOneWithWhereWithoutChunksInput, Prisma.SourceUpdateWithoutChunksInput>, Prisma.SourceUncheckedUpdateWithoutChunksInput>
+}
+
 export type SourceCreateWithoutWorkspaceInput = {
   id?: string
   type: $Enums.SourceType
@@ -481,6 +507,7 @@ export type SourceCreateWithoutWorkspaceInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  chunks?: Prisma.SourceChunkCreateNestedManyWithoutSourceInput
 }
 
 export type SourceUncheckedCreateWithoutWorkspaceInput = {
@@ -493,6 +520,7 @@ export type SourceUncheckedCreateWithoutWorkspaceInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  chunks?: Prisma.SourceChunkUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type SourceCreateOrConnectWithoutWorkspaceInput = {
@@ -537,6 +565,74 @@ export type SourceScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Source"> | Date | string
 }
 
+export type SourceCreateWithoutChunksInput = {
+  id?: string
+  type: $Enums.SourceType
+  title: string
+  content?: string | null
+  url?: string | null
+  status?: $Enums.SourceStatus
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workspace: Prisma.WorkspaceCreateNestedOneWithoutSourceInput
+}
+
+export type SourceUncheckedCreateWithoutChunksInput = {
+  id?: string
+  workspaceId: string
+  type: $Enums.SourceType
+  title: string
+  content?: string | null
+  url?: string | null
+  status?: $Enums.SourceStatus
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type SourceCreateOrConnectWithoutChunksInput = {
+  where: Prisma.SourceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SourceCreateWithoutChunksInput, Prisma.SourceUncheckedCreateWithoutChunksInput>
+}
+
+export type SourceUpsertWithoutChunksInput = {
+  update: Prisma.XOR<Prisma.SourceUpdateWithoutChunksInput, Prisma.SourceUncheckedUpdateWithoutChunksInput>
+  create: Prisma.XOR<Prisma.SourceCreateWithoutChunksInput, Prisma.SourceUncheckedCreateWithoutChunksInput>
+  where?: Prisma.SourceWhereInput
+}
+
+export type SourceUpdateToOneWithWhereWithoutChunksInput = {
+  where?: Prisma.SourceWhereInput
+  data: Prisma.XOR<Prisma.SourceUpdateWithoutChunksInput, Prisma.SourceUncheckedUpdateWithoutChunksInput>
+}
+
+export type SourceUpdateWithoutChunksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourceStatusFieldUpdateOperationsInput | $Enums.SourceStatus
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutSourceNestedInput
+}
+
+export type SourceUncheckedUpdateWithoutChunksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourceStatusFieldUpdateOperationsInput | $Enums.SourceStatus
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type SourceCreateManyWorkspaceInput = {
   id?: string
   type: $Enums.SourceType
@@ -559,6 +655,7 @@ export type SourceUpdateWithoutWorkspaceInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  chunks?: Prisma.SourceChunkUpdateManyWithoutSourceNestedInput
 }
 
 export type SourceUncheckedUpdateWithoutWorkspaceInput = {
@@ -571,6 +668,7 @@ export type SourceUncheckedUpdateWithoutWorkspaceInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  chunks?: Prisma.SourceChunkUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type SourceUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -586,6 +684,35 @@ export type SourceUncheckedUpdateManyWithoutWorkspaceInput = {
 }
 
 
+/**
+ * Count Type SourceCountOutputType
+ */
+
+export type SourceCountOutputType = {
+  chunks: number
+}
+
+export type SourceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  chunks?: boolean | SourceCountOutputTypeCountChunksArgs
+}
+
+/**
+ * SourceCountOutputType without action
+ */
+export type SourceCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SourceCountOutputType
+   */
+  select?: Prisma.SourceCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * SourceCountOutputType without action
+ */
+export type SourceCountOutputTypeCountChunksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SourceChunkWhereInput
+}
+
 
 export type SourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -599,6 +726,8 @@ export type SourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   createdAt?: boolean
   updatedAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
+  chunks?: boolean | Prisma.Source$chunksArgs<ExtArgs>
+  _count?: boolean | Prisma.SourceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["source"]>
 
 export type SourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -645,6 +774,8 @@ export type SourceSelectScalar = {
 export type SourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "type" | "title" | "content" | "url" | "status" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["source"]>
 export type SourceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
+  chunks?: boolean | Prisma.Source$chunksArgs<ExtArgs>
+  _count?: boolean | Prisma.SourceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SourceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -657,6 +788,7 @@ export type $SourcePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Source"
   objects: {
     workspace: Prisma.$WorkspacePayload<ExtArgs>
+    chunks: Prisma.$SourceChunkPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1064,6 +1196,7 @@ readonly fields: SourceFieldRefs;
 export interface Prisma__SourceClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   workspace<T extends Prisma.WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkspaceDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkspaceClient<runtime.Types.Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  chunks<T extends Prisma.Source$chunksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Source$chunksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourceChunkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1501,6 +1634,30 @@ export type SourceDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Sources to delete.
    */
   limit?: number
+}
+
+/**
+ * Source.chunks
+ */
+export type Source$chunksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SourceChunk
+   */
+  select?: Prisma.SourceChunkSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SourceChunk
+   */
+  omit?: Prisma.SourceChunkOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SourceChunkInclude<ExtArgs> | null
+  where?: Prisma.SourceChunkWhereInput
+  orderBy?: Prisma.SourceChunkOrderByWithRelationInput | Prisma.SourceChunkOrderByWithRelationInput[]
+  cursor?: Prisma.SourceChunkWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SourceChunkScalarFieldEnum | Prisma.SourceChunkScalarFieldEnum[]
 }
 
 /**
