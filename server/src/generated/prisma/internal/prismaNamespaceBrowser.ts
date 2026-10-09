@@ -57,7 +57,10 @@ export const ModelName = {
   Verification: 'Verification',
   Workspace: 'Workspace',
   Source: 'Source',
-  SourceChunk: 'SourceChunk'
+  SourceChunk: 'SourceChunk',
+  Conversation: 'Conversation',
+  Message: 'Message',
+  LearningArtifact: 'LearningArtifact'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -175,6 +178,48 @@ export const SourceChunkScalarFieldEnum = {
 } as const
 
 export type SourceChunkScalarFieldEnum = (typeof SourceChunkScalarFieldEnum)[keyof typeof SourceChunkScalarFieldEnum]
+
+
+export const ConversationScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  title: 'title',
+  summary: 'summary',
+  summaryMessageCount: 'summaryMessageCount',
+  summarizedAt: 'summarizedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
+
+
+export const MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  content: 'content',
+  citations: 'citations',
+  createdAt: 'createdAt'
+} as const
+
+export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const LearningArtifactScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  type: 'type',
+  title: 'title',
+  content: 'content',
+  sourceIds: 'sourceIds',
+  status: 'status',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LearningArtifactScalarFieldEnum = (typeof LearningArtifactScalarFieldEnum)[keyof typeof LearningArtifactScalarFieldEnum]
 
 
 export const SortOrder = {

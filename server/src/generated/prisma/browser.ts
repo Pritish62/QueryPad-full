@@ -52,3 +52,18 @@ export type Source = Prisma.SourceModel
  * 
  */
 export type SourceChunk = Prisma.SourceChunkModel
+/**
+ * Model Conversation
+ * 
+ */
+export type Conversation = Prisma.ConversationModel
+/**
+ * Model Message
+ * 
+ */
+export type Message = Prisma.MessageModel
+/**
+ * Model LearningArtifact
+ * 
+ */
+export type LearningArtifact = Prisma.LearningArtifactModel

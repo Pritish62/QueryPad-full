@@ -8,8 +8,6 @@ import {
 } from "../services/source-processing.service.js";
 import { findSourceById } from "../repository/source.repository.js";
 import { findChunksBySourceId } from "../repository/source-chunking.repositroy.js";
-import { processArtifactById } from "../services/artifact.service.js";
-import { summarizeConversationById } from "../services/conversation-memory.service.js";
 
 export const processSource = inngest.createFunction(
     {
@@ -69,7 +67,7 @@ export const generateArtifact = inngest.createFunction(
     async ({ event, step }) => {
         const { artifactId } = event.data;
 
-        await step.run("generate", () => processArtifactById(artifactId));
+        // await step.run("generate", () => processArtifactById(artifactId));
 
         return { artifactId, status: "READY" };
     },
@@ -84,9 +82,10 @@ export const summarizeConversation = inngest.createFunction(
     async ({ event, step }) => {
         const { conversationId, userId } = event.data;
 
-        await step.run("summarize", () =>
-            summarizeConversationById(conversationId, userId),
-        );
+        await step.run("summarize", () => {
+            // summarizeConversationById(conversationId, userId),
+                
+        });
 
         return { conversationId, status: "SUMMARIZED" };
     },

@@ -28,3 +28,33 @@ export const SourceStatus = {
 } as const
 
 export type SourceStatus = (typeof SourceStatus)[keyof typeof SourceStatus]
+
+
+export const MessageRole = {
+  USER: 'USER',
+  ASSISTANT: 'ASSISTANT'
+} as const
+
+export type MessageRole = (typeof MessageRole)[keyof typeof MessageRole]
+
+
+export const ArtifactType = {
+  SUMMARY: 'SUMMARY',
+  TAKEAWAYS: 'TAKEAWAYS',
+  FLASHCARDS: 'FLASHCARDS',
+  QUIZ: 'QUIZ',
+  MINDMAP: 'MINDMAP',
+  REPORT: 'REPORT'
+} as const
+
+export type ArtifactType = (typeof ArtifactType)[keyof typeof ArtifactType]
+
+
+export const ArtifactStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED: 'FAILED'
+} as const
+
+export type ArtifactStatus = (typeof ArtifactStatus)[keyof typeof ArtifactStatus]
