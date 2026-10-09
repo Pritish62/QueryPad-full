@@ -5,6 +5,9 @@ import { auth } from "./lib/auth.js";
 import cors from "cors";
 import { registerRoutes } from "./routes/routes.js";
 import { errorHandler } from "./middleware/error-handler-middlware.js";
+import { serve } from "inngest/express";
+import { inngest } from "./inngest/client.js";
+import { functions } from "./inngest/index.js";
 dotenv.config();
 
 const app = express();
@@ -21,6 +24,7 @@ app.all("/api/auth/{*splat}", toNodeHandler(auth));
 // Mount body-parsing middleware after the Better Auth handler.
 app.use(express.json());
 
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
 registerRoutes(app);
 
