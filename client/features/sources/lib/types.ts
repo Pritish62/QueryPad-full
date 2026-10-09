@@ -32,3 +32,13 @@ export type CreateSourceInput =
       title: string;
       content: string;
     };
+
+export type ImportWebsiteInput = {
+  url: string;
+  title?: string;
+};
+
+export type ImportYoutubeInput = {
+  url: string;
+  title?: string;
+};

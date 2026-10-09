@@ -5,9 +5,18 @@ import {
   createSource,
   deleteSource,
   getSource,
+  importWebsite,
+  importYoutube,
   listSources,
+  uploadPdf,
 } from "../lib/api";
-import type { CreateSourceInput, SourceFilters } from "../lib/types";
+import type {
+  CreateSourceInput,
+  ImportWebsiteInput,
+  ImportYoutubeInput,
+  Source,
+  SourceFilters,
+} from "../lib/types";
 
 export const sourceKeys = {
   all: (workspaceId: string) => ["sources", workspaceId] as const,
@@ -48,6 +57,40 @@ export function useCreateSource(workspaceId: string) {
       });
     },
   });
+}
+
+function useCreateSourceMutation<TInput>(
+  workspaceId: string,
+  mutationFn: (input: TInput) => Promise<Source>,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: sourceKeys.all(workspaceId),
+      });
+    },
+  });
+}
+
+export function useImportWebsite(workspaceId: string) {
+  return useCreateSourceMutation<ImportWebsiteInput>(workspaceId, (input) =>
+    importWebsite(workspaceId, input),
+  );
+}
+
+export function useImportYoutube(workspaceId: string) {
+  return useCreateSourceMutation<ImportYoutubeInput>(workspaceId, (input) =>
+    importYoutube(workspaceId, input),
+  );
+}
+
+export function useUploadPdf(workspaceId: string) {
+  return useCreateSourceMutation<File>(workspaceId, (file) =>
+    uploadPdf(workspaceId, file),
+  );
 }
 
 export function useDeleteSource(workspaceId: string) {
