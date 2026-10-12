@@ -1,37 +1,34 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ApiError } from "@/shared/lib/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SourceLibrary } from "@/features/sources/components/source-library";
+import { WorkspaceShell } from "@/features/workspaces/components/workspace-shell";
 import { useWorkspace } from "@/features/workspaces/hooks/use-workspaces";
+import { ApiError } from "@/shared/lib/api";
 
 function getErrorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 404) {
     return "This workspace could not be found.";
   }
-  if (error instanceof ApiError) {
-    return error.message;
-  }
-  return "Unable to load this workspace. Please try again.";
+  return error instanceof ApiError
+    ? error.message
+    : "Unable to load this workspace. Please try again.";
 }
 
 export default function WorkspacePage() {
   const params = useParams<{ workspaceId: string }>();
   const router = useRouter();
-  const workspaceId = params.workspaceId;
   const { data: workspace, error, isError, isLoading, refetch } =
-    useWorkspace(workspaceId);
+    useWorkspace(params.workspaceId);
 
   if (isLoading) {
     return (
-      <main className="min-h-svh bg-muted/30 px-6 py-10 md:px-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-5 w-96 max-w-full" />
-          <Skeleton className="h-80" />
+      <main className="min-h-svh bg-muted/30 p-6">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4">
+          <Skeleton className="h-16 rounded-2xl" />
+          <Skeleton className="h-96 rounded-3xl" />
         </div>
       </main>
     );
@@ -39,17 +36,17 @@ export default function WorkspacePage() {
 
   if (isError || !workspace) {
     return (
-      <main className="min-h-svh bg-muted/30 px-6 py-10 md:px-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <main className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
+        <div className="w-full max-w-lg space-y-4">
           <Alert variant="destructive">
             <AlertTitle>Could not load workspace</AlertTitle>
             <AlertDescription>{getErrorMessage(error)}</AlertDescription>
           </Alert>
-          <div>
+          <div className="flex gap-2">
             <Button onClick={() => void refetch()} variant="outline">
               Try again
             </Button>
-            <Button className="ml-2" onClick={() => router.push("/dashboard")}>
+            <Button onClick={() => router.push("/dashboard")}>
               Back to dashboard
             </Button>
           </div>
@@ -58,32 +55,5 @@ export default function WorkspacePage() {
     );
   }
 
-  return (
-    <main className="min-h-svh bg-muted/30 px-6 py-10 md:px-10">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <header className="flex flex-col gap-3">
-          <Button
-            className="w-fit"
-            onClick={() => router.push("/dashboard")}
-            variant="ghost"
-          >
-            ← All workspaces
-          </Button>
-          <div>
-            <p className="text-sm font-medium text-primary">Workspace</p>
-            <h1 className="font-heading text-3xl font-semibold tracking-tight">
-              {workspace.icon ? `${workspace.icon} ` : ""}
-              {workspace.title}
-            </h1>
-            {workspace.description ? (
-              <p className="mt-2 text-muted-foreground">
-                {workspace.description}
-              </p>
-            ) : null}
-          </div>
-        </header>
-        <SourceLibrary workspaceId={workspace.id} />
-      </div>
-    </main>
-  );
+  return <WorkspaceShell workspace={workspace} />;
 }

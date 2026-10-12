@@ -18,6 +18,12 @@ export const processSource = inngest.createFunction(
     async ({ event, step }) => {
         const { sourceId } = event.data;
 
+        if (!sourceId) {
+            throw new Error(
+                `process-source: event.data.sourceId is missing. Received: ${JSON.stringify(event.data)}`,
+            );
+        }
+
         await step.run("mark-processing", () => markSourceProcessing(sourceId));
 
         try {
