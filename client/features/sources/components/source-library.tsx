@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
+  CheckSquare,
   Clock,
   FileText,
   Globe,
@@ -12,7 +13,9 @@ import {
   Play,
   Plus,
   RefreshCw,
+  Square,
   StickyNote,
+  Trash2,
   Upload,
   XCircle,
 } from "lucide-react";
@@ -32,6 +35,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useCreateSource,
+  useDeleteSource,
   useImportWebsite,
   useImportYoutube,
   useSources,
@@ -432,6 +436,11 @@ function SourcesPanel({
 }) {
   const { data: sources, error, isError, isLoading, refetch } =
     useSources(workspaceId);
+  const deleteSource = useDeleteSource(workspaceId);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   /* Show detail view when a source is selected */
   if (activeSourceId) {
@@ -444,8 +453,43 @@ function SourcesPanel({
     );
   }
 
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (!sources) return;
+    if (selectedIds.size === sources.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sources.map((s) => s.id)));
+    }
+  }
+
+  async function handleBulkDelete() {
+    setBulkDeleting(true);
+    try {
+      for (const id of Array.from(selectedIds)) {
+        await deleteSource.mutateAsync(id);
+      }
+      setSelectedIds(new Set());
+      setBulkDeleteConfirm(false);
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
+
+  const hasSelection = selectedIds.size > 0;
+  const allSelected = sources ? selectedIds.size === sources.length && sources.length > 0 : false;
+
   return (
     <section className="space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
@@ -453,14 +497,54 @@ function SourcesPanel({
           </p>
           <h2 className="mt-1 text-[17px] font-semibold tracking-tight">Sources</h2>
         </div>
-        <Button
-          size="sm"
-          className="hidden gap-1.5 text-[12px] sm:inline-flex"
-          onClick={() => onOpenChange(true)}
-        >
-          <Plus className="size-3.5" />
-          Add source
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Bulk delete controls */}
+          {hasSelection && !bulkDeleteConfirm && (
+            <button
+              type="button"
+              onClick={() => setBulkDeleteConfirm(true)}
+              className="flex items-center gap-1.5 rounded-xl border border-destructive/40 bg-destructive/5 px-3 py-1.5 text-[12px] font-medium text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <Trash2 className="size-3.5" />
+              Delete {selectedIds.size} selected
+            </button>
+          )}
+          {bulkDeleteConfirm && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11.5px] text-destructive">
+                Delete {selectedIds.size} source{selectedIds.size > 1 ? "s" : ""}?
+              </span>
+              <button
+                type="button"
+                onClick={() => setBulkDeleteConfirm(false)}
+                className="rounded-xl border border-border/60 px-2.5 py-1.5 text-[11.5px] text-muted-foreground hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={bulkDeleting}
+                onClick={() => void handleBulkDelete()}
+                className="flex items-center gap-1.5 rounded-xl bg-destructive px-3 py-1.5 text-[11.5px] font-medium text-white hover:opacity-90 disabled:opacity-60"
+              >
+                {bulkDeleting ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="size-3.5" />
+                )}
+                Confirm delete
+              </button>
+            </div>
+          )}
+          <Button
+            size="sm"
+            className="hidden gap-1.5 text-[12px] sm:inline-flex"
+            onClick={() => onOpenChange(true)}
+          >
+            <Plus className="size-3.5" />
+            Add source
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -487,15 +571,42 @@ function SourcesPanel({
           </AlertDescription>
         </Alert>
       ) : sources?.length ? (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {sources.map((source) => (
-            <SourceCard
-              key={source.id}
-              source={source}
-              onClick={() => onSourceSelect(source.id)}
-            />
-          ))}
-        </div>
+        <>
+          {/* Select all toolbar */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleSelectAll}
+              className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {allSelected ? (
+                <CheckSquare className="size-4 text-primary" />
+              ) : (
+                <Square className="size-4" />
+              )}
+              {allSelected ? "Deselect all" : "Select all"}
+            </button>
+            {hasSelection && (
+              <span className="text-[11px] text-muted-foreground/60">
+                {selectedIds.size} of {sources.length} selected
+              </span>
+            )}
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {sources.map((source) => (
+              <SourceCard
+                key={source.id}
+                source={source}
+                onClick={() => onSourceSelect(source.id)}
+                selected={selectedIds.has(source.id)}
+                onToggleSelect={(e) => {
+                  e.stopPropagation();
+                  toggleSelect(source.id);
+                }}
+              />
+            ))}
+          </div>
+        </>
       ) : (
         <div className="rounded-2xl border border-dashed border-border/70 bg-card/50 px-6 py-14 text-center">
           <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted">
@@ -517,18 +628,48 @@ function SourcesPanel({
 
 /* ── SourceCard ─────────────────────────────────────────────────── */
 
-function SourceCard({ source, onClick }: { source: Source; onClick: () => void }) {
+function SourceCard({
+  source,
+  onClick,
+  selected,
+  onToggleSelect,
+}: {
+  source: Source;
+  onClick: () => void;
+  selected: boolean;
+  onToggleSelect: (e: React.MouseEvent) => void;
+}) {
   const meta = getSourceCardMeta(source.type);
   const Icon = meta.icon;
   const statusDot = STATUS_DOT[source.status] ?? STATUS_DOT.PENDING;
   const StatusIcon = statusDot.icon;
 
   return (
-    <button
-      type="button"
+    <div
+      className={`group relative w-full rounded-2xl border bg-card p-4 text-left transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${
+        selected
+          ? "border-primary/60 ring-1 ring-primary/30 bg-primary/5"
+          : "border-border/70 hover:border-primary/40"
+      }`}
       onClick={onClick}
-      className="group w-full rounded-2xl border border-border/70 bg-card p-4 text-left transition-all hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onClick()}
     >
+      {/* Checkbox overlay */}
+      <button
+        type="button"
+        onClick={onToggleSelect}
+        className={`absolute left-3 top-3 z-10 flex size-5 items-center justify-center rounded-md border transition-all ${
+          selected
+            ? "border-primary bg-primary text-white opacity-100"
+            : "border-border/60 bg-background/80 opacity-0 group-hover:opacity-100"
+        }`}
+        aria-label={selected ? "Deselect source" : "Select source"}
+      >
+        {selected && <CheckSquare className="size-3.5" />}
+      </button>
+
       <div className="flex items-start gap-3">
         <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
           <Icon className={`size-4 ${meta.color}`} />
@@ -558,7 +699,7 @@ function SourceCard({ source, onClick }: { source: Source; onClick: () => void }
           ) : null}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 

@@ -12,12 +12,14 @@ import {
   Play,
   RefreshCw,
   StickyNote,
+  Trash2,
   XCircle,
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSource } from "../hooks/use-sources";
-import type { Source, SourceStatus, SourceType } from "../lib/types";
+import { useDeleteSource, useSource } from "../hooks/use-sources";
+import type { Source, SourceStatus } from "../lib/types";
 
 type SourceDetailProps = {
   workspaceId: string;
@@ -106,13 +108,23 @@ export function SourceDetail({ workspaceId, sourceId, onBack }: SourceDetailProp
     );
   }
 
-  return <SourceDetailView source={source} onBack={onBack} />;
+  return <SourceDetailView workspaceId={workspaceId} source={source} onBack={onBack} />;
 }
 
-function SourceDetailView({ source, onBack }: { source: Source; onBack: () => void }) {
+function SourceDetailView({
+  workspaceId,
+  source,
+  onBack,
+}: {
+  workspaceId: string;
+  source: Source;
+  onBack: () => void;
+}) {
   const meta = getTypeMeta(source.type);
   const Icon = meta.icon;
   const metadata = source.metadata as Record<string, unknown> | null;
+  const deleteSource = useDeleteSource(workspaceId);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const wordCount = source.content
     ? source.content.trim().split(/\s+/).filter(Boolean).length
@@ -120,17 +132,60 @@ function SourceDetailView({ source, onBack }: { source: Source; onBack: () => vo
 
   const charCount = source.content?.length ?? null;
 
+  async function handleDelete() {
+    await deleteSource.mutateAsync(source.id);
+    onBack();
+  }
+
   return (
     <div className="flex flex-col gap-5">
-      {/* Back nav */}
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex w-fit items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      >
-        <ArrowLeft className="size-3.5" />
-        All sources
-      </button>
+      {/* Back nav + Delete */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex w-fit items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[12px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <ArrowLeft className="size-3.5" />
+          All sources
+        </button>
+
+        {/* Delete button */}
+        {!confirmDelete ? (
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-border/60 px-3 py-1.5 text-[12px] text-muted-foreground/70 transition-colors hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive"
+          >
+            <Trash2 className="size-3.5" />
+            Delete source
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-[11.5px] text-destructive">Delete permanently?</span>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(false)}
+              className="rounded-xl border border-border/60 px-2.5 py-1.5 text-[11.5px] text-muted-foreground transition-colors hover:bg-muted"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={deleteSource.isPending}
+              onClick={() => void handleDelete()}
+              className="flex items-center gap-1.5 rounded-xl bg-destructive px-3 py-1.5 text-[11.5px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {deleteSource.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="size-3.5" />
+              )}
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Header card */}
       <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
@@ -178,7 +233,6 @@ function SourceDetailView({ source, onBack }: { source: Source; onBack: () => vo
               }
             />
           )}
-          {/* PDF-specific metadata */}
           {metadata?.pageCount != null && (
             <MetaRow label="Pages" value={String(metadata.pageCount)} />
           )}
@@ -188,7 +242,6 @@ function SourceDetailView({ source, onBack }: { source: Source; onBack: () => vo
           {metadata?.fileName != null && (
             <MetaRow label="File name" value={String(metadata.fileName)} />
           )}
-          {/* YouTube-specific */}
           {metadata?.videoId != null && (
             <MetaRow
               label="Video ID"
@@ -205,14 +258,12 @@ function SourceDetailView({ source, onBack }: { source: Source; onBack: () => vo
               }
             />
           )}
-          {/* Content stats */}
           {wordCount != null && (
             <MetaRow label="Words" value={wordCount.toLocaleString()} />
           )}
           {charCount != null && (
             <MetaRow label="Characters" value={charCount.toLocaleString()} />
           )}
-          {/* PDF Cloudinary URL */}
           {metadata?.fileUrl != null && (
             <MetaRow
               label="File URL"
