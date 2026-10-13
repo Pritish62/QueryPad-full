@@ -46,6 +46,8 @@ type SourceLibraryProps = {
   workspaceId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  activeSourceId: string | null;
+  onSourceSelect: (sourceId: string | null) => void;
   /** When true, only render the dialog (no source list panel) */
   dialogOnly?: boolean;
 };
@@ -215,6 +217,8 @@ export function SourceLibrary({
   workspaceId,
   open,
   onOpenChange,
+  activeSourceId,
+  onSourceSelect,
   dialogOnly = false,
 }: SourceLibraryProps) {
   const form = useAddSourceDialog(workspaceId);
@@ -402,7 +406,12 @@ export function SourceLibrary({
   /* Sources Panel */
   return (
     <>
-      <SourcesPanel workspaceId={workspaceId} onOpenChange={onOpenChange} />
+      <SourcesPanel
+        activeSourceId={activeSourceId}
+        onSourceSelect={onSourceSelect}
+        workspaceId={workspaceId}
+        onOpenChange={onOpenChange}
+      />
       {dialog}
     </>
   );
@@ -413,13 +422,16 @@ export function SourceLibrary({
 function SourcesPanel({
   workspaceId,
   onOpenChange,
+  activeSourceId,
+  onSourceSelect,
 }: {
   workspaceId: string;
   onOpenChange: (open: boolean) => void;
+  activeSourceId: string | null;
+  onSourceSelect: (sourceId: string | null) => void;
 }) {
   const { data: sources, error, isError, isLoading, refetch } =
     useSources(workspaceId);
-  const [activeSourceId, setActiveSourceId] = useState<string | null>(null);
 
   /* Show detail view when a source is selected */
   if (activeSourceId) {
@@ -427,7 +439,7 @@ function SourcesPanel({
       <SourceDetail
         workspaceId={workspaceId}
         sourceId={activeSourceId}
-        onBack={() => setActiveSourceId(null)}
+        onBack={() => onSourceSelect(null)}
       />
     );
   }
@@ -480,7 +492,7 @@ function SourcesPanel({
             <SourceCard
               key={source.id}
               source={source}
-              onClick={() => setActiveSourceId(source.id)}
+              onClick={() => onSourceSelect(source.id)}
             />
           ))}
         </div>

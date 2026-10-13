@@ -8,6 +8,7 @@ import {
 } from "../services/source-processing.service.js";
 import { findSourceById } from "../repository/source.repository.js";
 import { findChunksBySourceId } from "../repository/source-chunking.repositroy.js";
+import { processArtifactById } from "../services/artifact.service.js";
 
 export const processSource = inngest.createFunction(
     {
@@ -73,9 +74,17 @@ export const generateArtifact = inngest.createFunction(
     async ({ event, step }) => {
         const { artifactId } = event.data;
 
-        // await step.run("generate", () => processArtifactById(artifactId));
+        if (!artifactId) {
+            throw new Error(
+                `generate-artifact: event.data.artifactId is missing. Received: ${JSON.stringify(event.data)}`,
+            );
+        }
 
-        return { artifactId, status: "READY" };
+        const artifact = await step.run("generate", () =>
+            processArtifactById(artifactId),
+        );
+
+        return { artifactId, status: artifact.status };
     },
 );
 

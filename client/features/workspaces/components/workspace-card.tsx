@@ -19,15 +19,17 @@ type WorkspaceCardProps = {
   workspace: Workspace;
   onEdit: (workspace: Workspace) => void;
   onDelete: (workspace: Workspace) => void;
+  className?: string;
 };
 
 export function WorkspaceCard({
   workspace,
   onEdit,
   onDelete,
+  className,
 }: WorkspaceCardProps) {
   return (
-    <article className="group relative min-h-52 overflow-hidden rounded-3xl shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+    <article className={cn("group relative min-h-52 min-h-[196px] overflow-hidden rounded-3xl shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg", className)}>
       <Link
         aria-label={`Open ${workspace.title}`}
         className={cn(
@@ -37,7 +39,7 @@ export function WorkspaceCard({
         href={workspaceRoutes.detail(workspace.id)}
       />
       <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/40 via-black/5 to-white/10" />
-      <div className="pointer-events-none relative flex min-h-52 flex-col p-5">
+      <div className="pointer-events-none relative flex min-h-[196px] flex-col p-5">
         <div className="flex items-start justify-between gap-2">
           <span className="flex size-11 items-center justify-center rounded-2xl bg-white/20 text-2xl backdrop-blur-sm">
             {workspace.icon || "📚"}
@@ -76,7 +78,7 @@ export function WorkspaceCard({
           </div>
         </div>
         <div className="mt-auto space-y-1.5 pt-8 text-white">
-          <h2 className="line-clamp-2 font-heading text-lg font-semibold leading-snug">
+          <h2 className="line-clamp-2 text-lg font-semibold leading-snug">
             {workspace.title}
           </h2>
           {workspace.description ? (

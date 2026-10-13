@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   BookOpen,
-  Bot,
   FileText,
   Globe,
   GraduationCap,
   Library,
   MessageSquare,
   Play,
-  Plus,
   Settings,
   Sparkles,
   StickyNote,
@@ -21,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatPanel } from "@/features/chat/components/chat-panel";
+import { LearningTools } from "@/features/learn";
 import { useSources } from "@/features/sources/hooks/use-sources";
 import type { Source } from "@/features/sources/lib/types";
 import { SourceLibrary } from "@/features/sources/components/source-library";
@@ -45,6 +44,7 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
   const router = useRouter();
   const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>("sources");
+  const [activeSourceId, setActiveSourceId] = useState<string | null>(null);
   const { data: sources, isLoading: sourcesLoading } = useSources(workspace.id);
 
   const navItems: {
@@ -54,7 +54,7 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
     implemented: boolean;
   }[] = [
     { id: "chat", icon: MessageSquare, label: "Chat", implemented: true },
-    { id: "learn", icon: GraduationCap, label: "Learn", implemented: false },
+    { id: "learn", icon: GraduationCap, label: "Learn", implemented: true },
     { id: "sources", icon: Library, label: "Sources", implemented: true },
     { id: "settings", icon: Settings, label: "Settings", implemented: true },
   ];
@@ -117,14 +117,21 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
 
         {/* Sources list */}
         <div className="flex min-h-0 flex-1 flex-col border-t border-border/70 px-2 py-3">
-          <div className="mb-2 flex items-center justify-between px-2">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("sources");
+              setActiveSourceId(null);
+            }}
+            className="mb-2 flex w-full items-center justify-between rounded-lg px-2 py-1 text-left transition-colors hover:bg-muted/60"
+          >
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
               Sources
             </span>
             <span className="rounded-full bg-muted px-1.5 py-px text-[10px] font-medium text-muted-foreground">
               {sources?.length ?? 0}
             </span>
-          </div>
+          </button>
 
           <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
             {sourcesLoading ? (
@@ -137,19 +144,31 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
               sources.map((source) => {
                 const meta = getSourceMeta(source);
                 const Icon = meta.icon;
+                const isActive = activeTab === "sources" && activeSourceId === source.id;
                 return (
-                  <div
+                  <button
                     key={source.id}
+                    type="button"
                     title={source.title}
-                    className="group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/60"
+                    onClick={() => {
+                      setActiveTab("sources");
+                      setActiveSourceId(source.id);
+                    }}
+                    className={`group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors ${
+                      isActive ? "bg-primary/10" : "hover:bg-muted/60"
+                    }`}
                   >
                     <span className={`flex size-5 shrink-0 items-center justify-center rounded-md ${meta.bg}`}>
                       <Icon className={`size-2.5 ${meta.color}`} />
                     </span>
-                    <span className="truncate text-[11.5px] text-muted-foreground group-hover:text-foreground">
+                    <span
+                      className={`truncate text-[11.5px] ${
+                        isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                      }`}
+                    >
                       {source.title}
                     </span>
-                  </div>
+                  </button>
                 );
               })
             ) : (
@@ -189,7 +208,7 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {(activeTab === "sources" || activeTab === "learn") && (
+            {activeTab === "sources" && (
               <Button
                 size="sm"
                 className="hidden h-8 gap-1.5 text-xs sm:inline-flex"
@@ -206,7 +225,9 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
         <div className={`flex-1 overflow-hidden ${activeTab === "chat" ? "" : "overflow-auto p-5 md:p-7"}`}>
           {activeTab === "sources" && (
             <SourceLibrary
+              activeSourceId={activeSourceId}
               onOpenChange={setSourceDialogOpen}
+              onSourceSelect={setActiveSourceId}
               open={sourceDialogOpen}
               workspaceId={workspace.id}
             />
@@ -215,11 +236,7 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
             <ChatPanel workspaceId={workspace.id} />
           )}
           {activeTab === "learn" && (
-            <ComingSoonPanel
-              icon={<GraduationCap className="size-6" />}
-              title="Learn"
-              description="Artifacts and quizzes generated from your sources are coming soon."
-            />
+            <LearningTools workspaceId={workspace.id} />
           )}
           {activeTab === "settings" && (
             <WorkspaceSettings
@@ -230,40 +247,6 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
         </div>
       </main>
 
-      {/* Dialog when triggered from non-sources tab or mobile */}
-      {activeTab !== "sources" && (
-        <SourceLibrary
-          onOpenChange={setSourceDialogOpen}
-          open={sourceDialogOpen}
-          workspaceId={workspace.id}
-          dialogOnly
-        />
-      )}
-    </div>
-  );
-}
-
-function ComingSoonPanel({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="text-center">
-        <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          {icon}
-        </div>
-        <h2 className="text-base font-semibold">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        <span className="mt-4 inline-block rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
-          Coming soon
-        </span>
-      </div>
     </div>
   );
 }

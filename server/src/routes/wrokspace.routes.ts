@@ -9,6 +9,7 @@ import {
     updateWorkspace,
 } from "../controllers/wrokspace.controller.js";
 import { asyncHandler } from "../utils/async-handler.js";
+import { artifactRoutes } from "./artifact.routes.js";
 import { sourceRoutes } from "./source.routes.js";
 
 export const WorkspaceRoutes = Router();
@@ -19,6 +20,7 @@ WorkspaceRoutes.get("/", asyncHandler(listWorkspaces));
 WorkspaceRoutes.post("/", asyncHandler(createWorkspace));
 
 WorkspaceRoutes.use("/:workspaceId/sources", sourceRoutes);
+WorkspaceRoutes.use("/:workspaceId/artifacts", artifactRoutes);
 
 WorkspaceRoutes.get("/:workspaceId", asyncHandler(getWorkspace));
 WorkspaceRoutes.patch("/:workspaceId", asyncHandler(updateWorkspace));

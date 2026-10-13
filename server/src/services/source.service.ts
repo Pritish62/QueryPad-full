@@ -28,7 +28,7 @@ async function createAndProcessSource(
     await enqueueSourceProcessing({
         sourceId: source.id,
         workspaceId: source.workspaceId,
-    });
+});     
 
     return source;
 }
