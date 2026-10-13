@@ -23,12 +23,12 @@ async function assertWorkspaceAccess(workspaceId: string, userId: string) {
 async function createAndProcessSource(
     data: Parameters<typeof createSourceRecord>[0],
 ) {
-    const source = await createSourceRecord(data); //
+    const source = await createSourceRecord(data);
 
-    // await enqueueSourceProcessing({
-    //     sourceId: source.id,
-    //     workspaceId: source.workspaceId,
-    // });
+    await enqueueSourceProcessing({
+        sourceId: source.id,
+        workspaceId: source.workspaceId,
+    });
 
     return source;
 }

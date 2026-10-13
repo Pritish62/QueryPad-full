@@ -25,6 +25,7 @@ import { useSources } from "@/features/sources/hooks/use-sources";
 import type { Source } from "@/features/sources/lib/types";
 import { SourceLibrary } from "@/features/sources/components/source-library";
 import type { Workspace } from "../lib/types";
+import { WorkspaceSettings } from "./workspace-settings";
 
 type WorkspaceShellProps = {
   workspace: Workspace;
@@ -55,7 +56,7 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
     { id: "chat", icon: MessageSquare, label: "Chat", implemented: true },
     { id: "learn", icon: GraduationCap, label: "Learn", implemented: false },
     { id: "sources", icon: Library, label: "Sources", implemented: true },
-    { id: "settings", icon: Settings, label: "Settings", implemented: false },
+    { id: "settings", icon: Settings, label: "Settings", implemented: true },
   ];
 
   return (
@@ -157,14 +158,7 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
           </div>
 
           {/* Inline add source */}
-          <button
-            type="button"
-            onClick={() => setSourceDialogOpen(true)}
-            className="mt-2 flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-2.5 py-1.5 text-[11.5px] text-muted-foreground transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
-          >
-            <Plus className="size-3.5" />
-            Add source
-          </button>
+         
         </div>
 
         {/* Back */}
@@ -195,14 +189,16 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              className="hidden h-8 gap-1.5 text-xs sm:inline-flex"
-              onClick={() => setSourceDialogOpen(true)}
-            >
-              <Sparkles className="size-3.5" />
-              Add source
-            </Button>
+            {(activeTab === "sources" || activeTab === "learn") && (
+              <Button
+                size="sm"
+                className="hidden h-8 gap-1.5 text-xs sm:inline-flex"
+                onClick={() => setSourceDialogOpen(true)}
+              >
+                <Sparkles className="size-3.5" />
+                Add source
+              </Button>
+            )}
             <ModeToggle />
           </div>
         </header>
@@ -226,10 +222,9 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
             />
           )}
           {activeTab === "settings" && (
-            <ComingSoonPanel
-              icon={<Settings className="size-6" />}
-              title="Settings"
-              description="Workspace settings are coming soon."
+            <WorkspaceSettings
+              workspace={workspace}
+              onDeleted={() => router.push("/dashboard")}
             />
           )}
         </div>

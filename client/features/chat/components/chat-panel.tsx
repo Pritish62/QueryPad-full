@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import type { UIMessage } from "ai";
 import {
   Bot,
@@ -59,22 +60,30 @@ export function ChatPanel({ workspaceId }: ChatPanelProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // ai/react v7 useChat
+  const chatTransport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: getChatStreamUrl(workspaceId),
+        credentials: "include",
+        body: {
+          conversationId: activeConversationId ?? undefined,
+          model,
+          webSearch,
+        },
+        fetch: async (input, init) => {
+          const response = await fetch(input, init);
+          const convId = response.headers.get("X-Conversation-Id");
+          if (convId && !activeConversationId) {
+            setActiveConversation(convId);
+          }
+          return response;
+        },
+      }),
+    [activeConversationId, model, setActiveConversation, webSearch, workspaceId],
+  );
+
   const { messages, sendMessage, setMessages, status, error } = useChat({
-    api: getChatStreamUrl(workspaceId),
-    credentials: "include",
-    body: {
-      conversationId: activeConversationId ?? undefined,
-      model,
-      webSearch,
-    },
-    onFinish: (message: UIMessage, { response }: { response: Response }) => {
-      // Extract X-Conversation-Id from response headers to persist the conversation
-      const convId = response.headers.get("X-Conversation-Id");
-      if (convId && !activeConversationId) {
-        setActiveConversation(convId);
-      }
-    },
+    transport: chatTransport,
   });
 
   const isStreaming = status === "streaming" || status === "submitted";
@@ -381,13 +390,15 @@ export function ChatPanel({ workspaceId }: ChatPanelProps) {
 /* ── Helpers ─────────────────────────────── */
 
 function getMessageText(msg: UIMessage): string {
-  if (typeof (msg as { content?: string }).content === "string") {
-    return (msg as { content: string }).content;
+  const content = (msg as { content?: unknown }).content;
+  if (typeof content === "string") {
+    return content;
   }
   if (Array.isArray(msg.parts)) {
-    return msg.parts
-      .filter((p: { type: string }) => p.type === "text")
-      .map((p: { text?: string }) => p.text ?? "")
+    const parts = msg.parts as Array<{ type?: string; text?: string }>;
+    return parts
+      .filter((p) => p.type === "text")
+      .map((p) => p.text ?? "")
       .join("");
   }
   return "";
