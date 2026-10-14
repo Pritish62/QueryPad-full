@@ -60,10 +60,10 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
   ];
 
   return (
-    <div className="flex min-h-svh bg-background">
+    <div className="flex h-screen h-dvh w-full overflow-hidden bg-background">
 
-      {/* ── LEFT SIDEBAR ─────────────────────────── */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-border/70 bg-card lg:flex">
+      {/* ── LEFT SIDEBAR (Static/Fixed) ───────────── */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-border/70 bg-card lg:flex h-full overflow-hidden">
 
         {/* Brand */}
         <div className="flex h-14 items-center gap-2.5 border-b border-border/70 px-4">
@@ -194,7 +194,7 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
       </aside>
 
       {/* ── MAIN CONTENT ─────────────────────────── */}
-      <main className="flex min-w-0 flex-1 flex-col">
+      <main className="flex min-w-0 flex-1 flex-col h-full overflow-hidden">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/70 px-5 md:px-7">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="hidden text-base lg:block">{workspace.icon || "📚"}</span>
@@ -222,7 +222,7 @@ export function WorkspaceShell({ workspace }: WorkspaceShellProps) {
           </div>
         </header>
 
-        <div className={`flex-1 overflow-hidden ${activeTab === "chat" ? "" : "overflow-auto p-5 md:p-7"}`}>
+        <div className={`flex-1 min-h-0 ${activeTab === "chat" ? "overflow-hidden" : "overflow-y-auto p-5 md:p-7"}`}>
           {activeTab === "sources" && (
             <SourceLibrary
               activeSourceId={activeSourceId}

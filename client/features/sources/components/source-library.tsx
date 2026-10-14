@@ -660,7 +660,7 @@ function SourceCard({
       <button
         type="button"
         onClick={onToggleSelect}
-        className={`absolute left-3 top-3 z-10 flex size-5 items-center justify-center rounded-md border transition-all ${
+        className={`absolute right-3 top-3 z-10 flex size-5 items-center justify-center rounded-md border transition-all ${
           selected
             ? "border-primary bg-primary text-white opacity-100"
             : "border-border/60 bg-background/80 opacity-0 group-hover:opacity-100"

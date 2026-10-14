@@ -24,7 +24,11 @@ import type {
   TakeawaysContent,
 } from "../lib/types";
 import { ArtifactStatusBadge } from "./artifact-status-badge";
+import { FlashcardsView } from "./flashcards-view";
 import { MindMapView } from "./mind-map-view";
+import { QuizView } from "./quiz-view";
+import { ReportView } from "./report-view";
+import { SummaryView } from "./summary-view";
 
 type ArtifactDetailProps = {
   workspaceId: string;
@@ -86,37 +90,39 @@ function ArtifactDetailView({
   const Icon = meta.icon;
 
   return (
-    <div className="flex flex-col gap-5">
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex w-fit items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      >
-        <ArrowLeft className="size-3.5" />
-        All learning tools
-      </button>
+    <div className="flex flex-col gap-4">
+      {/* ── UNIFIED COMPACT TOP HEADER CARD ─────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card p-3 sm:p-3.5 shadow-sm">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border/60 bg-muted/40 px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" />
+            <span className="hidden sm:inline">All learning tools</span>
+          </button>
 
-      <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-        <div className="flex items-start gap-4">
-          <span className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
-            <Icon className={`size-5 ${meta.color}`} />
+          <span className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
+            <Icon className={`size-4 ${meta.color}`} />
           </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-[16px] font-semibold leading-snug">{artifact.title}</h2>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10.5px] font-semibold ${meta.bg} ${meta.color} border-current/20`}>
-                <Icon className="size-2.5" />
-                {meta.label}
-              </span>
-              <ArtifactStatusBadge status={artifact.status} />
-              <span className="text-[11px] text-muted-foreground">
-                {new Date(artifact.createdAt).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
+
+          <div className="min-w-0 flex items-center gap-2 flex-wrap">
+            <h2 className="truncate text-[14.5px] font-semibold text-foreground max-w-[260px] sm:max-w-md">
+              {artifact.title}
+            </h2>
+            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${meta.bg} ${meta.color} border-current/20`}>
+              <Icon className="size-2.5" />
+              {meta.label}
+            </span>
+            <ArtifactStatusBadge status={artifact.status} />
+            <span className="text-[11px] text-muted-foreground hidden sm:inline">
+              {new Date(artifact.createdAt).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
           </div>
         </div>
       </div>
@@ -206,15 +212,7 @@ function ArtifactContent({ artifact }: { artifact: Artifact }) {
   }
 }
 
-function SummaryView({ content }: { content: SummaryContent }) {
-  return (
-    <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-      <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-foreground/85">
-        {content.markdown}
-      </p>
-    </div>
-  );
-}
+
 
 function TakeawaysView({ content }: { content: TakeawaysContent }) {
   return (
@@ -231,96 +229,8 @@ function TakeawaysView({ content }: { content: TakeawaysContent }) {
   );
 }
 
-function FlashcardsView({ content }: { content: FlashcardsContent }) {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {content.cards.map((card, index) => (
-        <FlashcardCard key={index} front={card.front} back={card.back} />
-      ))}
-    </div>
-  );
-}
 
-function FlashcardCard({ front, back }: { front: string; back: string }) {
-  const [flipped, setFlipped] = useState(false);
 
-  return (
-    <button
-      type="button"
-      onClick={() => setFlipped((value) => !value)}
-      className="flex min-h-40 flex-col rounded-2xl border border-border/70 bg-card p-4 text-left transition-all hover:border-primary/40 hover:shadow-sm"
-    >
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-        {flipped ? "Back" : "Front"}
-      </span>
-      <p className="mt-3 flex-1 whitespace-pre-wrap text-[13px] leading-relaxed text-foreground/85">
-        {flipped ? back : front}
-      </p>
-      <span className="mt-3 text-[10px] text-muted-foreground/50">Tap to flip</span>
-    </button>
-  );
-}
 
-function QuizView({ content }: { content: QuizContent }) {
-  return (
-    <div className="space-y-4">
-      {content.questions.map((question, index) => (
-        <div key={index} className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-          <p className="text-[13px] font-medium">
-            {index + 1}. {question.question}
-          </p>
-          <ul className="mt-3 space-y-2">
-            {question.options.map((option, optionIndex) => {
-              const isCorrect = optionIndex === question.correctIndex;
-              return (
-                <li
-                  key={optionIndex}
-                  className={`flex items-start gap-2.5 rounded-lg border px-3 py-2 text-[12.5px] ${
-                    isCorrect
-                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "border-border/60 text-muted-foreground"
-                  }`}
-                >
-                  {isCorrect ? (
-                    <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
-                  ) : (
-                    <span className="mt-0.5 size-3.5 shrink-0 rounded-full border border-current/30" />
-                  )}
-                  <span>{option}</span>
-                </li>
-              );
-            })}
-          </ul>
-          {question.explanation && (
-            <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-              <span className="font-medium text-foreground/80">Explanation: </span>
-              {question.explanation}
-            </p>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
 
-function ReportView({ content }: { content: ReportContent }) {
-  return (
-    <div className="space-y-4">
-      {content.sections?.map((section, index) => (
-        <div key={index} className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-          <h3 className="text-[13px] font-semibold">{section.title}</h3>
-          <p className="mt-2 whitespace-pre-wrap text-[12.5px] leading-relaxed text-foreground/80">
-            {section.content}
-          </p>
-        </div>
-      ))}
-      {content.markdown && (
-        <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-          <p className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-foreground/80">
-            {content.markdown}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
+

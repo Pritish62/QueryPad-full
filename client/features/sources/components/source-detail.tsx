@@ -2,22 +2,32 @@
 
 import {
   ArrowLeft,
+  BookOpen,
+  Calendar,
+  Check,
   CheckCircle2,
   Clock,
+  Code2,
+  Copy,
   ExternalLink,
+  Eye,
   FileText,
+  Filter,
   Globe,
   Hash,
+  Link2,
   Loader2,
   Play,
   RefreshCw,
+  Sparkles,
   StickyNote,
   Trash2,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MarkdownRenderer } from "@/features/learn/components/markdown-renderer";
 import { useDeleteSource, useSource } from "../hooks/use-sources";
 import type { Source, SourceStatus } from "../lib/types";
 
@@ -50,26 +60,11 @@ function StatusBadge({ status }: { status: SourceStatus }) {
   };
   const { icon: Icon, label, cls } = map[status] ?? map.PENDING;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10.5px] font-semibold ${cls}`}>
       <Icon className={`size-3 ${status === "PROCESSING" ? "animate-spin" : ""}`} />
       {label}
     </span>
   );
-}
-
-function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-border/50 last:border-0">
-      <span className="w-28 shrink-0 text-[11.5px] font-medium text-muted-foreground">{label}</span>
-      <span className="text-[12.5px] text-foreground break-all">{value}</span>
-    </div>
-  );
-}
-
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
 function formatDate(iso: string) {
@@ -79,6 +74,46 @@ function formatDate(iso: string) {
   });
 }
 
+/**
+ * Strips out leading boilerplate navigation links often found in scraped web pages
+ * (e.g., [Sitemap], [Open in app], [Sign in], Sign up, logo links, standalone dashes).
+ */
+function cleanWebContent(rawContent: string): { cleaned: string; hasBoilerplate: boolean } {
+  if (!rawContent) return { cleaned: "", hasBoilerplate: false };
+
+  const lines = rawContent.split("\n");
+  let startIndex = 0;
+  let detectedBoilerplate = false;
+
+  for (let i = 0; i < Math.min(lines.length, 35); i++) {
+    const line = lines[i].trim();
+    if (
+      line.startsWith("[Sitemap](") ||
+      line.startsWith("[Open in app](") ||
+      line.startsWith("[Sign in](") ||
+      line.startsWith("[Sign In](") ||
+      line.startsWith("[Medium Logo](") ||
+      line.startsWith("[Logo](") ||
+      line.toLowerCase() === "sign up" ||
+      line.toLowerCase() === "sign in" ||
+      line.toLowerCase() === "menu" ||
+      line.match(/^-{4,}$/) ||
+      line === ""
+    ) {
+      detectedBoilerplate = true;
+      startIndex = i + 1;
+    } else {
+      break;
+    }
+  }
+
+  const cleaned = lines.slice(startIndex).join("\n").trim();
+  return {
+    cleaned: cleaned || rawContent,
+    hasBoilerplate: detectedBoilerplate && startIndex > 0,
+  };
+}
+
 /* ── main component ──────────────────────────────────────────────── */
 
 export function SourceDetail({ workspaceId, sourceId, onBack }: SourceDetailProps) {
@@ -86,10 +121,8 @@ export function SourceDetail({ workspaceId, sourceId, onBack }: SourceDetailProp
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-5 p-1">
-        <Skeleton className="h-8 w-32 rounded-lg" />
+      <div className="flex flex-col gap-4 p-1">
         <Skeleton className="h-24 w-full rounded-2xl" />
-        <Skeleton className="h-40 w-full rounded-2xl" />
         <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     );
@@ -125,232 +158,298 @@ function SourceDetailView({
   const metadata = source.metadata as Record<string, unknown> | null;
   const deleteSource = useDeleteSource(workspaceId);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [viewMode, setViewMode] = useState<"reader" | "raw">("reader");
+  const [filterBoilerplate, setFilterBoilerplate] = useState(true);
 
-  const wordCount = source.content
-    ? source.content.trim().split(/\s+/).filter(Boolean).length
+  const rawContent = source.content || "";
+  const isWebSource = source.type === "WEBSITE";
+
+  // Clean boilerplate for web sources
+  const { cleaned: cleanedContent, hasBoilerplate } = useMemo(
+    () => cleanWebContent(rawContent),
+    [rawContent],
+  );
+
+  const displayContent =
+    isWebSource && filterBoilerplate && hasBoilerplate
+      ? cleanedContent
+      : rawContent;
+
+  const wordCount = rawContent
+    ? rawContent.trim().split(/\s+/).filter(Boolean).length
     : null;
 
-  const charCount = source.content?.length ?? null;
+  const effectiveUrl =
+    source.url ||
+    (typeof metadata?.fileUrl === "string" ? metadata.fileUrl : null);
 
   async function handleDelete() {
     await deleteSource.mutateAsync(source.id);
     onBack();
   }
 
+  const handleCopyContent = async () => {
+    if (!displayContent) return;
+    try {
+      await navigator.clipboard.writeText(displayContent);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-5">
-      {/* Back nav + Delete */}
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex w-fit items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[12px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5" />
-          All sources
-        </button>
-
-        {/* Delete button */}
-        {!confirmDelete ? (
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(true)}
-            className="flex items-center gap-1.5 rounded-xl border border-border/60 px-3 py-1.5 text-[12px] text-muted-foreground/70 transition-colors hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive"
-          >
-            <Trash2 className="size-3.5" />
-            Delete source
-          </button>
-        ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-[11.5px] text-destructive">Delete permanently?</span>
+    <div className="flex flex-col gap-4">
+      {/* ── SECTION 1: SOURCE HEADER & INFORMATION (Unified into ONE card) ── */}
+      <div className="rounded-2xl border border-border/70 bg-card shadow-sm overflow-hidden">
+        {/* Top Header Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-3.5">
+          {/* Left: Back button + Icon + Title + Type badge + Status badge */}
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <button
               type="button"
-              onClick={() => setConfirmDelete(false)}
-              className="rounded-xl border border-border/60 px-2.5 py-1.5 text-[11.5px] text-muted-foreground transition-colors hover:bg-muted"
+              onClick={onBack}
+              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border/60 bg-muted/40 px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              Cancel
+              <ArrowLeft className="size-3.5" />
+              <span className="hidden sm:inline">All sources</span>
             </button>
-            <button
-              type="button"
-              disabled={deleteSource.isPending}
-              onClick={() => void handleDelete()}
-              className="flex items-center gap-1.5 rounded-xl bg-destructive px-3 py-1.5 text-[11.5px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-            >
-              {deleteSource.isPending ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="size-3.5" />
-              )}
-              Delete
-            </button>
-          </div>
-        )}
-      </div>
 
-      {/* Header card */}
-      <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-        <div className="flex items-start gap-4">
-          <span className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
-            <Icon className={`size-5 ${meta.color}`} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-[16px] font-semibold leading-snug">{source.title}</h2>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold border ${meta.bg} ${meta.color} border-current/20`}>
+            <span className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
+              <Icon className={`size-4 ${meta.color}`} />
+            </span>
+
+            <div className="min-w-0 flex items-center gap-2 flex-wrap">
+              <h2 className="truncate text-[14.5px] font-semibold text-foreground max-w-[240px] sm:max-w-md">
+                {source.title}
+              </h2>
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${meta.bg} ${meta.color} border-current/20`}>
                 <Icon className="size-2.5" />
                 {meta.label}
               </span>
               <StatusBadge status={source.status} />
             </div>
           </div>
+
+          {/* Right: Delete button (with confirmation) */}
+          <div className="shrink-0">
+            {!confirmDelete ? (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-border/60 px-3 py-1.5 text-[12px] text-muted-foreground/70 transition-colors hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive"
+              >
+                <Trash2 className="size-3.5" />
+                <span>Delete source</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-[11.5px] text-destructive">Delete?</span>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  className="rounded-xl border border-border/60 px-2.5 py-1.5 text-[11.5px] text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={deleteSource.isPending}
+                  onClick={() => void handleDelete()}
+                  className="flex items-center gap-1.5 rounded-xl bg-destructive px-3 py-1.5 text-[11.5px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {deleteSource.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-3.5" />
+                  )}
+                  Confirm
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Divider bar line separating Header from Information */}
+        <div className="border-t border-border/60 bg-muted/20 px-4 py-2.5">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px]">
+            {/* Added */}
+            <div className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <Calendar className="size-3 text-muted-foreground/60" />
+                Added:
+              </span>
+              <span className="font-medium text-foreground">{formatDate(source.createdAt)}</span>
+            </div>
+
+            {/* URL */}
+            {effectiveUrl && (
+              <div className="flex items-center gap-1.5 max-w-[280px] sm:max-w-md truncate">
+                <span className="flex items-center gap-1 text-muted-foreground shrink-0">
+                  <Link2 className="size-3 text-muted-foreground/60" />
+                  URL:
+                </span>
+                <a
+                  href={effectiveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline truncate font-medium"
+                >
+                  <span className="truncate">{effectiveUrl}</span>
+                  <ExternalLink className="size-3 shrink-0" />
+                </a>
+              </div>
+            )}
+
+            {/* Words */}
+            {wordCount != null && (
+              <div className="flex items-center gap-1.5">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Hash className="size-3 text-muted-foreground/60" />
+                  Words:
+                </span>
+                <span className="font-medium text-foreground">{wordCount.toLocaleString()}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Metadata card */}
-      <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-        <h3 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-          <Hash className="size-3.5" />
-          Details
-        </h3>
-        <div>
-          <MetaRow label="Status" value={<StatusBadge status={source.status} />} />
-          <MetaRow label="Type" value={meta.label} />
-          <MetaRow label="Added" value={formatDate(source.createdAt)} />
-          <MetaRow label="Updated" value={formatDate(source.updatedAt)} />
-          {source.url && (
-            <MetaRow
-              label="URL"
-              value={
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
-                >
-                  {source.url.length > 60 ? `${source.url.slice(0, 60)}…` : source.url}
-                  <ExternalLink className="size-3" />
-                </a>
-              }
-            />
-          )}
-          {metadata?.pageCount != null && (
-            <MetaRow label="Pages" value={String(metadata.pageCount)} />
-          )}
-          {metadata?.fileSize != null && (
-            <MetaRow label="File size" value={formatBytes(Number(metadata.fileSize))} />
-          )}
-          {metadata?.fileName != null && (
-            <MetaRow label="File name" value={String(metadata.fileName)} />
-          )}
-          {metadata?.videoId != null && (
-            <MetaRow
-              label="Video ID"
-              value={
-                <a
-                  href={`https://youtube.com/watch?v=${metadata.videoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-mono text-[12px] text-primary hover:underline"
-                >
-                  {String(metadata.videoId)}
-                  <ExternalLink className="size-3" />
-                </a>
-              }
-            />
-          )}
-          {wordCount != null && (
-            <MetaRow label="Words" value={wordCount.toLocaleString()} />
-          )}
-          {charCount != null && (
-            <MetaRow label="Characters" value={charCount.toLocaleString()} />
-          )}
-          {metadata?.fileUrl != null && (
-            <MetaRow
-              label="File URL"
-              value={
-                <a
-                  href={String(metadata.fileUrl)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
-                >
-                  View PDF
-                  <ExternalLink className="size-3" />
-                </a>
-              }
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Status-specific message */}
+      {/* Status-specific banners */}
       {source.status === "PROCESSING" && (
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-400/30 bg-amber-400/5 px-5 py-4">
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-400/30 bg-amber-400/5 px-5 py-3.5">
           <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-amber-500" />
           <div>
             <p className="text-[13px] font-medium text-amber-600 dark:text-amber-400">
               Processing in progress
             </p>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
-              Your source is being indexed — this may take a moment. Refresh to check progress.
+            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+              Your source is being indexed — this may take a moment.
             </p>
           </div>
         </div>
       )}
-      {source.status === "PENDING" && (
-        <div className="flex items-start gap-3 rounded-2xl border border-sky-400/30 bg-sky-400/5 px-5 py-4">
-          <Clock className="mt-0.5 size-4 shrink-0 text-sky-500" />
-          <div>
-            <p className="text-[13px] font-medium text-sky-600 dark:text-sky-400">
-              Queued for processing
-            </p>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
-              This source is queued and will be indexed shortly.
-            </p>
-          </div>
-        </div>
-      )}
+
       {source.status === "FAILED" && (
-        <div className="flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4">
+        <div className="flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-3.5">
           <XCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
           <div>
             <p className="text-[13px] font-medium text-destructive">Processing failed</p>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
+            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
               Something went wrong while indexing this source. You can try deleting and re-adding it.
             </p>
           </div>
         </div>
       )}
 
-      {/* Extracted content */}
-      {source.content && (
-        <div className="rounded-2xl border border-border/70 bg-card shadow-sm">
-          <div className="flex items-center justify-between border-b border-border/60 px-5 py-3">
-            <h3 className="text-[12px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-              Extracted content
-            </h3>
-            {wordCount && (
-              <span className="text-[11px] text-muted-foreground/50">
-                ~{wordCount.toLocaleString()} words
-              </span>
+      {/* ── SECTION 2: EXTRACTED CONTENT (Structured & User-Friendly) ── */}
+      {source.content ? (
+        <div className="rounded-2xl border border-border/70 bg-card shadow-sm overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
+            <div className="flex items-center gap-2">
+              <FileText className="size-3.5 text-primary" />
+              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+                Extracted Content
+              </h3>
+              {isWebSource && (
+                <span className="rounded-md bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-600 dark:text-sky-400">
+                  Web Article
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* If web source and boilerplate was detected: Allow toggling clean mode */}
+              {isWebSource && hasBoilerplate && (
+                <button
+                  type="button"
+                  onClick={() => setFilterBoilerplate((prev) => !prev)}
+                  className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-medium transition-colors ${
+                    filterBoilerplate
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border/60 bg-muted/30 text-muted-foreground hover:text-foreground"
+                  }`}
+                  title={filterBoilerplate ? "Showing cleaned article (nav junk removed)" : "Showing full raw scrape"}
+                >
+                  <Sparkles className="size-3" />
+                  <span>{filterBoilerplate ? "Clean Article" : "Full Scrape"}</span>
+                </button>
+              )}
+
+              {/* View Mode Toggle: Reader (Formatted) vs Raw Text */}
+              <div className="flex items-center rounded-lg border border-border/60 bg-muted/40 p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("reader")}
+                  className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium transition-all ${
+                    viewMode === "reader"
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <BookOpen className="size-3" />
+                  <span>Reader</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("raw")}
+                  className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium transition-all ${
+                    viewMode === "raw"
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Code2 className="size-3" />
+                  <span>Raw</span>
+                </button>
+              </div>
+
+              {/* Copy Action */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyContent}
+                className="h-7 gap-1.5 rounded-lg px-2 text-[11.5px] text-muted-foreground hover:text-foreground"
+              >
+                {copied ? (
+                  <>
+                    <Check className="size-3 text-emerald-500" />
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-3" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Content Body: Rendered Markdown or Raw Preformatted Text */}
+          <div className="max-h-[580px] overflow-y-auto px-5 sm:px-7 py-5">
+            {viewMode === "reader" ? (
+              <article className="max-w-none">
+                <MarkdownRenderer content={displayContent} />
+              </article>
+            ) : (
+              <pre className="font-mono text-[12px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">
+                {displayContent}
+              </pre>
             )}
           </div>
-          <div className="max-h-[420px] overflow-y-auto px-5 py-4">
-            <p className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-foreground/80">
-              {source.content}
+        </div>
+      ) : (
+        source.status !== "FAILED" && (
+          <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 px-6 py-8 text-center">
+            <FileText className="mx-auto size-8 text-muted-foreground/30" />
+            <p className="mt-2 text-[12.5px] text-muted-foreground">
+              Content will appear here once processing is complete.
             </p>
           </div>
-        </div>
-      )}
-
-      {/* No content yet */}
-      {!source.content && source.status !== "FAILED" && (
-        <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 px-6 py-8 text-center">
-          <FileText className="mx-auto size-8 text-muted-foreground/30" />
-          <p className="mt-3 text-[12.5px] text-muted-foreground">
-            Content will appear here once processing is complete.
-          </p>
-        </div>
+        )
       )}
     </div>
   );

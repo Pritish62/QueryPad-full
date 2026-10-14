@@ -113,17 +113,20 @@ export function DashboardHome() {
           </Link>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden gap-1.5 text-sm sm:inline-flex"
-              asChild
-            >
-              <Link href={memoryRoutes.settings}>
-                <Brain className="size-4" />
-                Memory
-              </Link>
-            </Button>
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden gap-1.5 text-sm sm:inline-flex"
+              >
+                <Link href={memoryRoutes.settings}>
+                  <Brain className="size-4" />
+                </Link>
+                 Memory
+              </Button>
+             
+            </div>
+
             <ModeToggle />
             <SignOutButton />
           </div>
@@ -221,10 +224,10 @@ export function DashboardHome() {
           )}
 
           {!isLoading &&
-          !error &&
-          workspaces &&
-          workspaces.length > 0 &&
-          filteredWorkspaces.length === 0 ? (
+            !error &&
+            workspaces &&
+            workspaces.length > 0 &&
+            filteredWorkspaces.length === 0 ? (
             <Empty className="rounded-3xl border bg-card">
               <EmptyHeader>
                 <EmptyTitle>No workspaces found</EmptyTitle>
