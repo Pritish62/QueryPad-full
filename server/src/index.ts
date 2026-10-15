@@ -11,15 +11,30 @@ import { functions } from "./inngest/index.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT ;
-const clientURL = process.env.CLIENT_URL || "http://localhost:3000";
+const PORT = Number(process.env.PORT || 8081);
+const configuredClientOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+const clientOrigins = new Set(configuredClientOrigins);
+
+if (process.env.NODE_ENV !== "production") {
+  clientOrigins.add("http://localhost:3000");
+}
 
 app.use(
-  cors ({
-    origin: clientURL,
-    credentials: true
-  })
-)
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || clientOrigins.has(origin.replace(/\/$/, ""))) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
+    credentials: true,
+  }),
+);
 app.all("/api/auth/{*splat}", toNodeHandler(auth));
 // Mount body-parsing middleware after the Better Auth handler.
 app.use(express.json());
@@ -36,5 +51,5 @@ app.get("/health", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log("Server is running on port 8081");
+  console.log(`Server is running on port ${PORT}`);
 });
