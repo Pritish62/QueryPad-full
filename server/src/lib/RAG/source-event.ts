@@ -8,8 +8,22 @@ export async function enqueueSourceProcessing(input: {
     sourceId: string;
     workspaceId: string;
 }) {
-    await inngest.send({
-        name: "source/created",
-        data: input,
-    });
+    try {
+        const result = await inngest.send({
+            name: "source/created",
+            data: input,
+        });
+        console.info("Queued source processing", {
+            sourceId: input.sourceId,
+            workspaceId: input.workspaceId,
+            eventIds: result.ids,
+        });
+    } catch (error) {
+        console.error("Failed to queue source processing", {
+            sourceId: input.sourceId,
+            workspaceId: input.workspaceId,
+            error,
+        });
+        throw error;
+    }
 }
