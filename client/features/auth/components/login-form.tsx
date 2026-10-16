@@ -66,6 +66,7 @@ export function LoginForm({
         const { data, error } = await signIn.social({
             provider: "google",
             callbackURL: new URL(callbackPath, window.location.origin).toString(),
+            errorCallbackURL: new URL("/login", window.location.origin).toString(),
         });
 
         if (error) {
