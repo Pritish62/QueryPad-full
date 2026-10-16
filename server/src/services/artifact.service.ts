@@ -16,6 +16,7 @@ import {
 } from "./artifact-generation.service.js";
 import { getWorkspaceByIdForUser } from "./workspace.service.js";
 import type { CreateArtifactInput } from "../validators/artifact.validator.js";
+import { reserveAiRequest } from "./ai-usage.service.js";
 
 /**
  * Lists all learning artifacts in a workspace.
@@ -77,6 +78,8 @@ export async function createArtifactForWorkspace(
         workspaceId,
         input.sourceIds,
     );
+
+    await reserveAiRequest(userId);
 
     const artifact = await createArtifactRecord({
         workspaceId,

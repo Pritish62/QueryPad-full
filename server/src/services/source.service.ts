@@ -15,6 +15,7 @@ import { NotFoundError } from "../types/app-error.js";
 import { CreateSourceInput, ImportWebSearchInput, ImportWebsiteInput, ImportYoutubeInput, ListSourcesQuery } from "../validators/source.validator.js";
 
 import { getWorkspaceByIdForUser } from "./workspace.service.js";
+import { reserveAiRequest } from "./ai-usage.service.js";
 
 async function assertWorkspaceAccess(workspaceId: string, userId: string) {
     await getWorkspaceByIdForUser(workspaceId, userId);
@@ -22,7 +23,9 @@ async function assertWorkspaceAccess(workspaceId: string, userId: string) {
 
 async function createAndProcessSource(
     data: Parameters<typeof createSourceRecord>[0],
+    userId: string,
 ) {
+    await reserveAiRequest(userId);
     const source = await createSourceRecord(data);
 
     await enqueueSourceProcessing({
@@ -97,7 +100,7 @@ export async function createTextOrMarkdownSource(
         title: input.title,
         content: input.content,
         status: "PENDING",
-    });  
+    }, userId);  
 
 }
 
@@ -139,7 +142,7 @@ export async function uploadPdfSource(
             resourceType: upload.resourceType,
             pageCount,
         },
-    });
+    }, userId);
 }
 
 export async function importWebsiteSource(
@@ -161,7 +164,7 @@ export async function importWebsiteSource(
         metadata: {
             importedFrom: scraped.sourceUrl,
         },
-    });
+    }, userId);
 }
 
 export async function importYoutubeSource(
@@ -183,7 +186,7 @@ export async function importYoutubeSource(
         metadata: {
             videoId: transcript.videoId,
         },
-    });
+    }, userId);
 }
 
 export async function importWebSearchSource(
@@ -204,5 +207,5 @@ export async function importWebSearchSource(
             importedFrom: "web-search",
             sourceUrl: input.url,
         },
-    });
+    }, userId);
 }

@@ -19,8 +19,20 @@ model User {
   sessions      Session[]
   accounts      Account[]
   workspaces    Workspace[]
+  aiUsage       AiUsage?
   @@unique([email])
   @@map("user")
+}
+
+model AiUsage {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  requestCount Int      @default(0) @map("request_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_usage")
 }
 
 model Session {

@@ -36,3 +36,10 @@ export class ConflictError extends AppError {
         this.name = "ConflictError";
     }
 }
+
+export class RateLimitError extends AppError {
+    constructor(message = "AI request limit reached") {
+        super(429, message);
+        this.name = "RateLimitError";
+    }
+}

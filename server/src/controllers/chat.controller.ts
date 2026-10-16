@@ -13,6 +13,7 @@ import {
     createConversationSchema,
 } from "../validators/chat.validator.js";
 import { workspaceIdParamSchema } from "../validators/workspace.validator.js";
+import { reserveAiRequest } from "../services/ai-usage.service.js";
 
 export async function listConversations(req: Request, res: Response) {
     const { workspaceId } = workspaceIdParamSchema.parse(req.params);
@@ -59,6 +60,8 @@ export async function deleteConversation(req: Request, res: Response) {
 export async function streamChat(req: Request, res: Response) {
     const { workspaceId } = workspaceIdParamSchema.parse(req.params);
     const body = chatBodySchema.parse(req.body);
+
+    await reserveAiRequest(req.session.user.id);
 
     await streamWorkspaceChat(res, workspaceId, req.session.user.id, {
         conversationId: body.conversationId,
