@@ -24,6 +24,9 @@ export const auth = betterAuth({
                 secure: isSecureDeployment,
             },
         },
+        account: {
+            storeStateStrategy: "cookie",
+        },
     database: prismaAdapter(prisma, {
         provider: "postgresql", // or "mysql", "sqlite", ...etc
     }),
