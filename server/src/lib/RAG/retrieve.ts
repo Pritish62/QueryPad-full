@@ -20,11 +20,22 @@ export async function retrieveWorkspaceContext(
     query: string,
 ): Promise<RetrievedChunk[]> {
     const [embedding] = await embedTexts([query]);
+    if (!embedding?.length) {
+        throw new Error("Query embedding was empty");
+    }
+
     const matches = await queryWorkspaceVectors(
         workspaceId,
         embedding,
         RAG_TOP_K,
     );
+
+    console.info("RAG retrieval", {
+        workspaceId,
+        indexMatches: matches.length,
+        scores: matches.map((match) => match.score ?? 0),
+        minimumScore: RAG_MIN_SCORE,
+    });
 
     const chunks: RetrievedChunk[] = [];
 
@@ -45,6 +56,11 @@ export async function retrieveWorkspaceContext(
             typeof metadata.chunkId !== "string" ||
             typeof metadata.text !== "string"
         ) {
+            console.warn("Skipping Pinecone match with incomplete metadata", {
+                workspaceId,
+                score,
+                metadataKeys: metadata ? Object.keys(metadata) : [],
+            });
             continue;
         }
 

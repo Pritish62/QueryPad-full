@@ -121,6 +121,11 @@ export async function upsertSourceVectors(
 
     const index = await getPineconeIndex();
     const namespace = index.namespace(workspaceId);
+    console.info("Upserting source vectors", {
+        index: indexName,
+        namespace: workspaceId,
+        count: records.length,
+    });
 
     const batchSize = 100;
     for (let i = 0; i < records.length; i += batchSize) {
@@ -175,7 +180,13 @@ export async function queryWorkspaceVectors(
     topK: number,
 ) {
     const index = await getPineconeIndex();
-    const result = await index.namespace(workspaceId).query({
+    const namespace = index.namespace(workspaceId);
+    console.info("Querying source vectors", {
+        index: indexName,
+        namespace: workspaceId,
+        topK,
+    });
+    const result = await namespace.query({
         vector,
         topK,
         includeMetadata: true,
